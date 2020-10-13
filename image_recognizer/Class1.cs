@@ -117,7 +117,6 @@ namespace image_recognizer
                 {
                     string item = list_of_ans[i];
                     yield return item;
-//                    Console.WriteLine(item);
                     if (i == name_list.Count - 1)
                     {
                         break;
