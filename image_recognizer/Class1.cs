@@ -5,6 +5,7 @@ using System.IO;
 using SixLabors.ImageSharp; // Из одноимённого пакета NuGet
 using SixLabors.ImageSharp.PixelFormats;
 using System.Linq;
+using System.Windows;
 using SixLabors.ImageSharp.Processing;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.OnnxRuntime;
@@ -15,24 +16,27 @@ namespace image_recognizer
     public class Classificator
     {
         private static ManualResetEvent waitHandler = new ManualResetEvent(true);
+        private Semaphore sem;
         const int TargetWidth = 224;
         const int TargetHeight = 224;
-        List<Image<Rgb24>> pic_list = null;
-        List<string> name_list = null;
+        private List<Image<Rgb24>> pic_list = null;
+        private List<string> name_list = null;
+        private List<string> list_of_ans =null;
+        private Object locker = new Object();
+        private Object locker1 = new Object();
         InferenceSession session = new InferenceSession("resnet50-v1-7.onnx");
         public Classificator(string str)
         {
-            IEnumerable<string> dir = Directory.EnumerateFiles(str);
+            IEnumerable<string> dir = Directory.EnumerateFiles(str, "*.png").Concat(Directory.EnumerateFiles(str, "*.jpg")).ToList();
             pic_list= new List<Image<Rgb24>>();
             name_list = new List<string>();
             foreach (var item in dir)
             {
-                if ((item.Substring(item.LastIndexOf('.')) == ".jpg") ||(item.Substring(item.LastIndexOf('.')) == ".png"))
-                {
-                    pic_list.Add(Image.Load<Rgb24>(item));
-                    name_list.Add(item);
-                }
+                pic_list.Add(Image.Load<Rgb24>(item));
+                name_list.Add(item);
             }
+            list_of_ans = new List<string>();
+            sem = new Semaphore(0, name_list.Count);
 
         }
         public void recognize()
@@ -40,12 +44,10 @@ namespace image_recognizer
             Thread thread2 = new Thread(() => stop());
             thread2.IsBackground = true;
             thread2.Start();
-
             Thread thread = new Thread(() => {
             int i = 0;
             foreach(var image in pic_list)
             {
-                waitHandler.WaitOne();
                 var input = new DenseTensor<float>(new[] { 1, 3, TargetHeight, TargetWidth });
                 var mean = new[] { 0.485f, 0.456f, 0.406f };
                 var stddev = new[] { 0.229f, 0.224f, 0.225f };
@@ -62,11 +64,9 @@ namespace image_recognizer
                 Tuple<DenseTensor<float>, string> tup = new Tuple<DenseTensor<float>, string>(input, name_list[i]);
                 Thread thread1 = new Thread(() => result(tup));
                 thread1.Start();
-                Console.WriteLine(i);
                 i++;
             }
-            }
-            );
+            });
             thread.Start();
 
         }
@@ -85,11 +85,16 @@ namespace image_recognizer
             var softmax = output.Select(x => (float)Math.Exp(x) / sum);
 
             // Выдаем 10 наиболее вероятных результатов на экран
-            foreach(var p in softmax
+            var t = softmax
                 .Select((x, i) => new { Label = classLabels[i], Confidence = x })
                 .OrderByDescending(x => x.Confidence)
-                .Take(1))
-                Console.WriteLine(input.Item2.Substring(input.Item2.LastIndexOf('\\')+1) + " - " + p.Label + " confidence = " + p.Confidence);
+                .Take(1)
+                .ToList();
+            lock(locker)
+            {
+                list_of_ans.Add(input.Item2.Substring(input.Item2.LastIndexOf('\\')+1) + " - " +t[0].Label + " - "  + " confidence = " + t[0].Confidence);
+            }
+            sem.Release();
         }
         public void stop()
         {
@@ -97,9 +102,26 @@ namespace image_recognizer
             {
                 if (Console.ReadKey(true).Key == ConsoleKey.Enter)
                 {
-                    Console.WriteLine("\n\n\n Enter\n\n\n");
+                    Console.WriteLine("Enter");
                     waitHandler.Reset();
                     return;
+                }
+            }
+        }
+        public System.Collections.Generic.IEnumerable<string> answers()
+        {
+            for (int i = 0; i<name_list.Count; i++)
+            {
+                sem.WaitOne();
+                lock(locker)
+                {
+                    string item = list_of_ans[i];
+                    yield return item;
+//                    Console.WriteLine(item);
+                    if (i == name_list.Count - 1)
+                    {
+                        break;
+                    }
                 }
             }
         }
