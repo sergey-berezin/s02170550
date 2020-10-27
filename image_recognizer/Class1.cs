@@ -24,7 +24,7 @@ namespace image_recognizer
         private List<string> list_of_ans =null;
         private Object locker = new Object();
         private Object locker1 = new Object();
-        InferenceSession session = new InferenceSession("resnet50-v1-7.onnx");
+        InferenceSession session = new InferenceSession(@"C:\Users\vdtri\source\repos\WpfApp1\WpfApp1\resnet50-v1-7.onnx");
         public Classificator(string str)
         {
             IEnumerable<string> dir = Directory.EnumerateFiles(str, "*.png").Concat(Directory.EnumerateFiles(str, "*.jpg")).ToList();
@@ -41,9 +41,10 @@ namespace image_recognizer
         }
         public void recognize()
         {
-            Thread thread2 = new Thread(() => stop());
+ /*           Thread thread2 = new Thread(() => stop());
             thread2.IsBackground = true;
             thread2.Start();
+ */
             Thread thread = new Thread(() => {
             int i = 0;
             foreach(var image in pic_list)
@@ -92,21 +93,15 @@ namespace image_recognizer
                 .ToList();
             lock(locker)
             {
-                list_of_ans.Add(input.Item2.Substring(input.Item2.LastIndexOf('\\')+1) + " - " +t[0].Label + " - "  + " confidence = " + t[0].Confidence);
+                list_of_ans.Add(input.Item2.Substring(input.Item2.LastIndexOf('\\')+1) + "-" +t[0].Label);
+
             }
             sem.Release();
         }
         public void stop()
         {
-            while (true)
-            {
-                if (Console.ReadKey(true).Key == ConsoleKey.Enter)
-                {
-                    Console.WriteLine("Enter");
-                    waitHandler.Reset();
-                    return;
-                }
-            }
+            waitHandler.Reset();
+            return;
         }
         public System.Collections.Generic.IEnumerable<string> answers()
         {
@@ -116,6 +111,7 @@ namespace image_recognizer
                 lock(locker)
                 {
                     string item = list_of_ans[i];
+//                    Thread.Sleep(1000);
                     yield return item;
 //                    Console.WriteLine(item);
                     if (i == name_list.Count - 1)
@@ -125,7 +121,7 @@ namespace image_recognizer
                 }
             }
         }
-        static string[] classLabels = 
+        public static string[] classLabels = 
         {   
             "tench",
             "goldfish",
