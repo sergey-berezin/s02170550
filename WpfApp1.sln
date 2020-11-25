@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp1", "WpfApp1\WpfApp1.csproj", "{BAACC259-7F93-469A-911E-128B1A0AD578}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Debug|x64.ActiveCfg = Debug|x64
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Debug|x64.Build.0 = Debug|x64
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Release|x64.ActiveCfg = Release|x64
+		{BAACC259-7F93-469A-911E-128B1A0AD578}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {167B1119-D8BE-4E4D-B8B1-973E3C443E14}
+	EndGlobalSection
+EndGlobal
